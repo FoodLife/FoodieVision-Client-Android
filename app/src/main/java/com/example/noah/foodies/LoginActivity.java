@@ -72,8 +72,8 @@ public class LoginActivity extends AppCompatActivity{
             }
         });
 */
-        final Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new View.OnClickListener() {
+         Button signin = (Button) findViewById(R.id.email_sign_in_button);
+        signin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
             String password = mPasswordView.getText().toString();
@@ -100,10 +100,91 @@ public class LoginActivity extends AppCompatActivity{
 
         });
 
+        Button signup = (Button) findViewById((R.id.CreateUser));
+
+        signup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String password = mPasswordView.getText().toString();
+                String user_name = mEmailView.getText().toString();
+                JSONObject post = null;
+                try {
+                    post = new JSONObject("{\"user_name\":\"post\",\"password\" : \"password\"}");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                // JSONObject result = new FoodieAPI(FoodieAPI.login_url,post).post();
+
+
+                new Signup(user_name,password).execute();
+
+            }
+            ;
+
+
+        });
+
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
     }
+    private class Signup extends AsyncTask<Void,Void,Boolean>{
+        String _user_name;
+        String _password;
+        String message = "";
+        public Signup(String user_name, String password){
+            _user_name = user_name;
+            _password = password;
+        }
+        @Override
+        protected void onPostExecute(Boolean result){
 
+            Handler handler =  new Handler(getApplicationContext().getMainLooper());
+            handler.post( new Runnable(){
+                public void run(){
+                    Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT);
+                }
+            });
+            if (result){
+                new Login(_user_name,_password).execute();
+            }
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            int success;
+            JSONObject post = new JSONObject();
+            String user_token = null;
+            try {
+                post.put("user_name",_user_name);
+                post.put("password",_password);
+            } catch (JSONException e) {
+            }
+            JSONObject result = null;
+            result = new FoodieAPI(FoodieAPI.create_usr_url,post).post();
+            try {
+                success = result.getInt("success");
+
+                switch(success){
+                    case  1:
+                        if(result.getInt("result") > 0){
+                            return true;
+                        }
+                    case 0:
+                        message = "invalid login";
+                        return false;
+                    case -1:
+                        message = "database error";
+                        return false;
+                }
+            } catch (JSONException e) {
+                message="unexpected result";
+            }
+
+            return false;
+        }
+    }
     private class Login extends AsyncTask<Void,Void,Boolean>{
         String _user_name;
         String _password;

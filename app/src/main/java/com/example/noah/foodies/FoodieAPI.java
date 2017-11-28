@@ -21,6 +21,7 @@ public class FoodieAPI extends AsyncTask<Void, Void, JSONObject>{
     public static final String root_ip = "10.1.39.69:5000";
     public static final String root_url = "http://" + root_ip + "/foodies/";
     public static final String login_url = root_url + "login";
+    public static final String create_usr_url = root_url + "create_user";
     public static final String IS_FOOD_URL = root_url + "is_food";
     String _url_address;
     JSONObject _post;
@@ -67,7 +68,7 @@ public class FoodieAPI extends AsyncTask<Void, Void, JSONObject>{
 
 
         } catch (IOException e) {
-            e.printStackTrace();
+           return null;
         }
         try {
             return new JSONObject(return_val);

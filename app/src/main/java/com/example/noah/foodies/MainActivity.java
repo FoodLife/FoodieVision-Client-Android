@@ -3,7 +3,9 @@ package com.example.noah.foodies;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,13 +18,16 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int LOGIN_INTENT = 1;
-    private static final int CAMERA_REQUEST =2;
-    private static final int GALLERY_REQUEST = 3;
-    private static final int ANALYSIS_REQUEST = 4;
+    public static final int LOGIN_INTENT = 1;
+    public static final int CAMERA_REQUEST =2;
+    public static final int GALLERY_REQUEST = 3;
+    public static final int ANALYSIS_REQUEST = 4;
+
     private TextView mTextMessage;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -95,7 +100,7 @@ private void launch_intent(int request){
             break;
 
         }
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
 
             Intent intent = new Intent(this,FoodieAnalysis.class);
 
@@ -104,11 +109,26 @@ private void launch_intent(int request){
 
             }else if (requestCode == GALLERY_REQUEST){
                 Uri selectedImageUri = data.getData();
+
+                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+                Cursor cursor = getContentResolver().query(selectedImageUri,
+                        filePathColumn, null, null, null);
+
+                cursor.moveToFirst();
+
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+
+                String picturePath = cursor.getString(columnIndex);
+
+                cursor.close();
                 try {
-                    photo = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
-                } catch (IOException e) {
-                    Toast.makeText(this.getApplicationContext(),"couldn't load image",Toast.LENGTH_SHORT);
+                    FileInputStream fis =  new FileInputStream(picturePath);
+                    photo = BitmapFactory.decodeStream(fis);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 }
+                photo = BitmapFactory.decodeFile(picturePath );
             }
             if (photo != null){
                 intent.putExtra("BitmapImage",photo);
