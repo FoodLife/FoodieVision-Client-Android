@@ -21,6 +21,7 @@ import android.widget.Toast;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_INTENT = 1;
@@ -105,31 +106,21 @@ private void launch_intent(int request){
             Intent intent = new Intent(this,FoodieAnalysis.class);
 
             if (requestCode == CAMERA_REQUEST){
+                Uri imageUri = data.getData();
                 photo = (Bitmap) data.getExtras().get("data");
 
             }else if (requestCode == GALLERY_REQUEST){
                 Uri selectedImageUri = data.getData();
 
-                String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
-                Cursor cursor = getContentResolver().query(selectedImageUri,
-                        filePathColumn, null, null, null);
-
-                cursor.moveToFirst();
-
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-
-                String picturePath = cursor.getString(columnIndex);
-
-                cursor.close();
                 try {
-                    FileInputStream fis =  new FileInputStream(picturePath);
-                    photo = BitmapFactory.decodeStream(fis);
+                    InputStream image_stream = getContentResolver().openInputStream(selectedImageUri);
+                    photo = BitmapFactory.decodeStream(image_stream);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                photo = BitmapFactory.decodeFile(picturePath );
+
             }
+
             if (photo != null){
                 intent.putExtra("BitmapImage",photo);
                 startActivityForResult(intent,ANALYSIS_REQUEST);
