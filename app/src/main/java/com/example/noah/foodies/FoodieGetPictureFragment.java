@@ -1,19 +1,21 @@
 package com.example.noah.foodies;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.io.IOException;
+import java.io.InputStream;
 
 
 /**
@@ -25,8 +27,9 @@ import org.json.JSONObject;
  * create an instance of this fragment.
  */
 public class FoodieGetPictureFragment extends Fragment {
-    private static final int CAMERA_REQUEST = 1;
-    private static final int ANALYSIS_REQUEST = 2;
+    private static final int CAMERA_REQUEST = 2;
+    private static final int GALLERY_REQUEST = 3;
+    private static final int ANALYSIS_REQUEST = 4;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
@@ -72,7 +75,20 @@ public class FoodieGetPictureFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                getActivity().startActivityForResult(cameraIntent, CAMERA_REQUEST);
+            }
+            ;
+
+
+        });
+
+        Button gallery = (Button)view.findViewById(R.id.Gallery_button);
+        gallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+                galleryIntent.setType("image/*");
+                getActivity().startActivityForResult(galleryIntent, GALLERY_REQUEST);
             }
             ;
 
@@ -82,12 +98,26 @@ public class FoodieGetPictureFragment extends Fragment {
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
+        Bitmap photo = null;
+        if (resultCode == Activity.RESULT_OK) {
 
             Intent intent = new Intent(getActivity(),FoodieAnalysis.class);
-            intent.putExtra("BitmapImage",photo);
-            startActivityForResult(intent,ANALYSIS_REQUEST);
+
+            if (requestCode == CAMERA_REQUEST){
+                photo = (Bitmap) data.getExtras().get("data");
+
+            }else if (requestCode == GALLERY_REQUEST){
+                Uri selectedImageUri = data.getData();
+                try {
+                    photo = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImageUri);
+                } catch (IOException e) {
+                    Toast.makeText(getActivity().getApplicationContext(),"couldn't load image",Toast.LENGTH_SHORT);
+                }
+            }
+            if (photo != null){
+                intent.putExtra("BitmapImage",photo);
+                startActivityForResult(intent,ANALYSIS_REQUEST);
+            }
         }
     }
 

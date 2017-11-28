@@ -1,53 +1,23 @@
 package com.example.noah.foodies;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
@@ -110,15 +80,15 @@ public class LoginActivity extends AppCompatActivity{
             String user_name = mEmailView.getText().toString();
                 JSONObject post = null;
                 try {
-                    post = new JSONObject("{\"user_name\":\"test\",\"password\" : \"password\"}");
+                    post = new JSONObject("{\"user_name\":\"post\",\"password\" : \"password\"}");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-               // JSONObject result = new FoodieAPI(FoodieAPI.login_url,post).test();
+               // JSONObject result = new FoodieAPI(FoodieAPI.login_url,post).post();
 
 
-                new Login(getApplicationContext(),user_name,password).execute();
+                new Login(user_name,password).execute();
                 /*
                 if( attemptLogin(mEmailView.getText().toString(), mPasswordView.getText().toString())){
 
@@ -137,16 +107,21 @@ public class LoginActivity extends AppCompatActivity{
     private class Login extends AsyncTask<Void,Void,Boolean>{
         String _user_name;
         String _password;
-        Context _context;
-        public Login(Context context, String user_name, String password){
-            _context = context;
+        String message = "";
+        public Login(String user_name, String password){
             _user_name = user_name;
             _password = password;
         }
         @Override
         protected void onPostExecute(Boolean result){
+
+            Handler handler =  new Handler(getApplicationContext().getMainLooper());
+            handler.post( new Runnable(){
+                public void run(){
+                    Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT);
+                }
+            });
             if (result){
-                Toast.makeText(_context,result.toString(),Toast.LENGTH_LONG);
                 setResult(RESULT_OK);
                 finish();
                }
@@ -154,6 +129,7 @@ public class LoginActivity extends AppCompatActivity{
 
         @Override
         protected Boolean doInBackground(Void... voids) {
+            int success;
             JSONObject post = new JSONObject();
             String user_token = null;
             try {
@@ -162,60 +138,30 @@ public class LoginActivity extends AppCompatActivity{
             } catch (JSONException e) {
             }
             JSONObject result = null;
-            result = new FoodieAPI(FoodieAPI.login_url,post).test();
+            result = new FoodieAPI(FoodieAPI.login_url,post).post();
             try {
-                user_token= result.getString("result");
-            } catch (JSONException e) {
-            }
+                success = result.getInt("success");
 
-            if (user_token != null) {
-                SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-                SharedPreferences.Editor edit = sharedPreferences.edit();
-                edit.putString("user_token", user_token);
-                edit.commit();
-                return true;
+                switch(success){
+                    case  1:
+                        user_token = result.getString("result");
+                        SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
+                        SharedPreferences.Editor edit = sharedPreferences.edit();
+                        edit.putString("user_token", user_token);
+                        edit.apply();
+                        return true;
+                    case 0:
+                        message = "invalid login";
+                        return false;
+                    case -1:
+                        message = "database error";
+                        return false;
+                }
+            } catch (JSONException e) {
+                       message="unexpected result";
             }
 
             return false;
         }
-    }
-    protected boolean attemptLogin(String user_name, String password){
-        JSONObject post = new JSONObject();
-        String user_token = null;
-        try {
-            post.put("user_name",user_name);
-            post.put("password",password);
-        } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(), "error building json input", Toast.LENGTH_SHORT).show();
-        }
-        JSONObject result = null;
-        try {
-            result = new FoodieAPI(FoodieAPI.login_url,post).execute().get();
-        } catch (InterruptedException e) {
-            Toast.makeText(getApplicationContext(), "communication error", Toast.LENGTH_SHORT).show();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        try {
-            Toast.makeText(getApplicationContext(), result.getString("result"), Toast.LENGTH_SHORT).show();
-        } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(), "unexpected result", Toast.LENGTH_SHORT).show();
-        }
-        try {
-            user_token= result.getString("user_token");
-        } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(), "unexpected result", Toast.LENGTH_SHORT).show();
-        }
-
-        if (user_token != null) {
-            SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-            SharedPreferences.Editor edit = sharedPreferences.edit();
-            edit.putString("user_token", user_token);
-            edit.apply();
-            setContentView(R.layout.activity_main);
-            return true;
-        }
-
-        return false;
     }
 }

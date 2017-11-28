@@ -30,7 +30,7 @@ public class FoodieAPI extends AsyncTask<Void, Void, JSONObject>{
         this._url_address = url_address;
         this._post = post;
     }
-    public JSONObject test() {
+    public JSONObject post() {
 
         // TODO: attempt authentication against a network service.
         String return_val = null;

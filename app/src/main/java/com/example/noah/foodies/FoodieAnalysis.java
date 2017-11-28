@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,31 +31,48 @@ public class FoodieAnalysis extends AppCompatActivity {
     }
 
 
-private boolean analyse_image(Bitmap image){
-    SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-    String user_token = sharedPreferences.getString("user_token","DEFAULT");
+private boolean analyse_image(Bitmap image) {
+        int success = 0;
+    SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, MODE_PRIVATE);
+    if (sharedPreferences.contains("user_token")) {
+        String user_token = sharedPreferences.getString("user_token", "DEFAULT");
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
         String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-    JSONObject post = new JSONObject();
+        JSONObject post = new JSONObject();
 
-    try {
-        post.put("user_token",user_token);
-        post.put("image",encoded);
-    } catch (JSONException e) {
-        e.printStackTrace();
-    }
+        try {
+            post.put("user_token", user_token);
+            post.put("image", encoded);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-    try {
-        JSONObject result = new FoodieAPI(FoodieAPI.IS_FOOD_URL,post).execute().get();
-    } catch (InterruptedException e) {
-        e.printStackTrace();
-    } catch (ExecutionException e) {
-        e.printStackTrace();
+        try {
+            JSONObject result = new FoodieAPI(FoodieAPI.IS_FOOD_URL, post).execute().get();
+
+            success = result.getInt("success");
+            TextView textView = findViewById(R.id.textView);
+
+            if (result.get("result").equals("Y")){
+
+                textView.setText("Is food");
+            }else{
+                textView.setText("aint food");
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
-    return true;
+    return false;
 }
     }
 

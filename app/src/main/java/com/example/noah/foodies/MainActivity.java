@@ -1,192 +1,118 @@
 package com.example.noah.foodies;
 
-import android.app.LoaderManager;
-import android.content.*;
-import android.database.Cursor;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 public class MainActivity extends AppCompatActivity {
-static final int login = 0;
+    private static final int LOGIN_INTENT = 1;
+    private static final int CAMERA_REQUEST =2;
+    private static final int GALLERY_REQUEST = 3;
+    private static final int ANALYSIS_REQUEST = 4;
+    private TextView mTextMessage;
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            Fragment selected = null;
+            switch (item.getItemId()) {
+                case R.id.navigation_home:
+                    selected = FoodieGetPictureFragment.newInstance();
+                    break;
+                case R.id.navigation_dashboard:
+                    selected = ItemFragment.newInstance(2);
+                    break;
+                case R.id.navigation_notifications:
+                    selected = ItemFragment.newInstance(3);
+                    break;
+            }
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.frame, selected);
+            transaction.commit();
+            return true;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-
-
-        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
 
 
         setContentView(R.layout.activity_main);
+        SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
+        SharedPreferences.Editor edit = sharedPreferences.edit();
+        //edit.remove(PreferenceKey.USER_KEY);
+        edit.commit();
 
-        if(!sharedPreferences.contains("user_token")) {
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivityForResult(intent,login);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame, ItemFragment.newInstance(2));
+        transaction.commit();
+
+        if(!sharedPreferences.contains(PreferenceKey.USER_KEY)) {
+            launch_intent(LOGIN_INTENT);
         }
-        Button test = (Button) findViewById(R.id.test_post);
 
-
+        mTextMessage = (TextView) findViewById(R.id.message);
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setSelectedItemId(R.id.navigation_dashboard);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
+private void launch_intent(int request){
+        if (request == LOGIN_INTENT){
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivityForResult(intent,LOGIN_INTENT);
+        }
+}
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
-        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-        String user_token = sharedPreferences.getString("user_token","no");
-        if (requestCode == login) {
+        Bitmap photo = null;
+        SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
+        switch(requestCode){
+            case LOGIN_INTENT:
             // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                Intent intent = new Intent(this,Main2Activity.class);
-                startActivity(intent);
+            if (resultCode != RESULT_OK) {
+                finish();
             }
-        }
-    }
-public void test(){
-        BufferedReader reader = null;
-        try
-        {
-            JSONObject json = new JSONObject();
-            String address = "http://34.239.222.152:5000/hello";
-            try {
-                json.put("json","test");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            // Defined URL  where to send data
-            URL url = new URL(address);
-
-            // Send POST data request
-
-            URLConnection conn = url.openConnection();
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Content-Type", "application/json");
-            OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-            String data = json.toString();
-            wr.write( data);
-            wr.flush();
-
-            // Get the server response
-
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-
-            // Read Server Response
-            while((line = reader.readLine()) != null)
-            {
-                // Append server response in string
-                sb.append(line + "\n");
-            }
-
+            break;
 
         }
-        catch(Exception ex)
-        {
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
 
-        }
-        finally
-        {
-            try
-            {
+            Intent intent = new Intent(this,FoodieAnalysis.class);
 
-                reader.close();
-            }
+            if (requestCode == CAMERA_REQUEST){
+                photo = (Bitmap) data.getExtras().get("data");
 
-            catch(Exception ex) {}
-        }
-    }
-
-
-    public class post_test  extends AsyncTask<Void, Void, Boolean> {
-        JSONObject return_json;
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-
-            // TODO: attempt authentication against a network service.
-            JSONObject json = new JSONObject();
-            String address = "http://34.239.222.152:5000/hello";
-            try {
-                json.put("json","test");
-            } catch (JSONException e) {
-                e.printStackTrace();
-
-            }
-            try {
-
-                URL url = new URL(address);
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(10000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");
-                conn.setDoOutput(true);
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setRequestProperty("Host", address);
-                conn.connect();
-
-                OutputStreamWriter out =new OutputStreamWriter(conn.getOutputStream ());
-
-
-               // out.writeBytes(URLEncoder.encode(json.toString(),"UTF-8"));
-                String data = json.toString();
-                out.write(data);
-                out.flush();
-                out.close();
-
-                InputStream input = new BufferedInputStream(conn.getInputStream());
-
-                Scanner s = new Scanner(input).useDelimiter("\\A");
-                String return_val = s.hasNext() ? s.next() : "";
-
+            }else if (requestCode == GALLERY_REQUEST){
+                Uri selectedImageUri = data.getData();
                 try {
-                    return_json = new JSONObject(return_val);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    photo = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
+                } catch (IOException e) {
+                    Toast.makeText(this.getApplicationContext(),"couldn't load image",Toast.LENGTH_SHORT);
                 }
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            return true;
-        }
-        protected void onPostUpdate(Integer... progress){
-            Context context = getApplicationContext();
-            CharSequence text = "Hello toast!";
-            int duration = Toast.LENGTH_SHORT;
-
-            try {
-                Toast.makeText(context, return_json.getString("result"), duration).show();
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if (photo != null){
+                intent.putExtra("BitmapImage",photo);
+                startActivityForResult(intent,ANALYSIS_REQUEST);
             }
         }
     }
