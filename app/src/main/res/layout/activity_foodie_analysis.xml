@@ -30,11 +30,4 @@
         android:text="Not Food"
         android:textColor="#ffffffff" />
 
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left|top"
-        app:srcCompat="?attr/actionModeCloseDrawable" />
-
 </FrameLayout>

@@ -18,11 +18,14 @@ import java.util.Scanner;
  */
 
 public class FoodieAPI extends AsyncTask<Void, Void, JSONObject>{
-    public static final String root_ip = "10.1.39.69:5000";
+    public static final String root_ip = "10.1.38.92:5000";
     public static final String root_url = "http://" + root_ip + "/foodies/";
+    public static final String IMAGE_REQUEST_ROOT = root_url + "/image";
     public static final String login_url = root_url + "login";
     public static final String create_usr_url = root_url + "create_user";
     public static final String IS_FOOD_URL = root_url + "is_food";
+    public static final String SEARCH = root_url + "search";
+
     String _url_address;
     JSONObject _post;
     JSONObject return_json;

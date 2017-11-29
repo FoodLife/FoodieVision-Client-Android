@@ -3,12 +3,9 @@ package com.example.noah.foodies;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -16,12 +13,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import com.example.noah.foodies.dummy.FoodieContent;
 
 public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_INTENT = 1;
@@ -68,13 +61,19 @@ public class MainActivity extends AppCompatActivity {
         //edit.remove(PreferenceKey.USER_KEY);
         edit.commit();
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.frame, ItemFragment.newInstance(2));
-        transaction.commit();
 
         if(!sharedPreferences.contains(PreferenceKey.USER_KEY)) {
             launch_intent(LOGIN_INTENT);
         }
+        else {
+            initial_fragment();
+        }
+    }
+    public void initial_fragment(){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame, ItemFragment.newInstance(2));
+        transaction.commit();
+
 
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -94,14 +93,18 @@ private void launch_intent(int request){
         SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
         switch(requestCode){
             case LOGIN_INTENT:
-            // Make sure the request was successful
-            if (resultCode != RESULT_OK) {
-                finish();
-            }
-            break;
+                // Make sure the request was successful
+                if (resultCode != RESULT_OK) {
+                    finish();
+                }
+                else{
+                  //  initial_fragment();
+                }
+                break;
 
         }
-        if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK &&
+                (requestCode == CAMERA_REQUEST || requestCode == GALLERY_REQUEST)) {
 
             Intent intent = new Intent(this,FoodieAnalysis.class);
 
@@ -109,22 +112,30 @@ private void launch_intent(int request){
                 Uri imageUri = data.getData();
                 photo = (Bitmap) data.getExtras().get("data");
 
+                if (photo != null){
+                    intent.putExtra("image",photo);
+                    intent.putExtra("type",FoodieAnalysis.FROM_CAMERA);
+                }else{
+                    return;
+                }
+
             }else if (requestCode == GALLERY_REQUEST){
                 Uri selectedImageUri = data.getData();
+                intent.putExtra("image", selectedImageUri);
 
-                try {
+                intent.putExtra("type",FoodieAnalysis.FROM_GALLERY);
+             /*   try {
                     InputStream image_stream = getContentResolver().openInputStream(selectedImageUri);
                     photo = BitmapFactory.decodeStream(image_stream);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
-                }
+                }*/
 
+            }else{
+                return;
             }
 
-            if (photo != null){
-                intent.putExtra("BitmapImage",photo);
-                startActivityForResult(intent,ANALYSIS_REQUEST);
-            }
+            startActivityForResult(intent,ANALYSIS_REQUEST);
         }
     }
 }
