@@ -57,7 +57,7 @@ _image = Bitmap.createScaledBitmap(_image, 195, 260, true);
         int success = 0;
         SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, MODE_PRIVATE);
         if (sharedPreferences.contains(PreferenceKey.USER_TOKEN)) {
-            String user_token = sharedPreferences.getString("_user_token", "DEFAULT");
+            String user_token = sharedPreferences.getString(PreferenceKey.USER_TOKEN, "DEFAULT");
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream);
             String encoded = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
@@ -66,7 +66,7 @@ _image = Bitmap.createScaledBitmap(_image, 195, 260, true);
             JSONObject post = new JSONObject();
 
             try {
-                post.put("_user_token", user_token);
+                post.put("user_token", user_token);
                 post.put("image", encoded);
             } catch (JSONException e) {
                 e.printStackTrace();

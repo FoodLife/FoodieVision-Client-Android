@@ -78,7 +78,7 @@ public class FoodieAnalysisFragment extends Fragment {
         int success = 0;
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, getActivity().MODE_PRIVATE);
         if (sharedPreferences.contains(PreferenceKey.USER_TOKEN)) {
-            String user_token = sharedPreferences.getString("_user_token", "DEFAULT");
+            String user_token = sharedPreferences.getString(PreferenceKey.USER_TOKEN, "DEFAULT");
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
