@@ -80,9 +80,9 @@ _image = Bitmap.createScaledBitmap(_image, 195, 260, true);
 
                 if (result.get("result").equals("Y")){
 
-                    textView.setText("Is food");
+                    textView.setText("IS FOOD");
                 }else{
-                    textView.setText("aint food");
+                    textView.setText("IS NOT FOOD");
                 }
 
             } catch (InterruptedException e) {

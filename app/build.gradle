@@ -28,6 +28,7 @@ dependencies {
     implementation 'com.android.support:support-v4:26.1.0'
     implementation 'com.android.support:recyclerview-v7:26.1.0'
     testImplementation 'junit:junit:4.12'
+    compile 'com.squareup.picasso:picasso:2.5.2'
     //androidTestImplementation 'com.android.support.post:runner:1.0.1'
     //androidTestImplementation 'com.android.support.post.espresso:espresso-core:3.0.1'
 }
