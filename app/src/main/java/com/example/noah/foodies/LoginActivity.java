@@ -91,6 +91,12 @@ if(user_name.equalsIgnoreCase("guest") && !password.equalsIgnoreCase("")){
             public void onClick(View view) {
                 String password = mPasswordView.getText().toString();
                 String user_name = mEmailView.getText().toString();
+                if (user_name.equalsIgnoreCase("") || user_name.equalsIgnoreCase("guest")){
+                    user_name = "guest";
+                    Toast.makeText(getApplicationContext(),"Invalid username for sign up",Toast.LENGTH_SHORT);
+                    return;
+                }
+
                 JSONObject post = null;
                 try {
                     post = new JSONObject("{\"user_name\":\"post\",\"password\" : \"password\"}");
