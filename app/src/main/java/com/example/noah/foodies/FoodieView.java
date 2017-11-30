@@ -23,17 +23,24 @@ boolean _is_food;
         _image = getIntent().getParcelableExtra("image");
         _priv = getIntent().getExtras().getBoolean("private");
        _favorite = getIntent().getExtras().getBoolean("favorite");
-       _own = getIntent().getExtras().getBoolean("ower");
+       _own = getIntent().getExtras().getBoolean("owner");
        _is_food = getIntent().getExtras().getBoolean("is_food");
 
 
         ImageView image = findViewById(R.id.foodieimg);
-
+        //assigning variable names and click listeners to buttons
         ImageButton priv = findViewById(R.id.privateButton);
         ImageButton fav = findViewById(R.id.favButton);
         ImageButton delete = findViewById(R.id.deleteButton);
 
+        priv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //imageProcess call would be implemented here.
+            }
+        });
 
+            //setting images for buttons and visibility
             if (_priv) {
                 priv.setImageResource(android.R.drawable.ic_secure);
             }
@@ -61,4 +68,4 @@ boolean _is_food;
 
 
     }
-}
+}//end class
