@@ -99,8 +99,8 @@ public class FoodieAdapter extends RecyclerView.Adapter<FoodieAdapter.ViewHolder
         protected Boolean doInBackground(Void... voids) {
 
             SharedPreferences sharedPreferences = _context.getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, _context.MODE_PRIVATE);
-            if (sharedPreferences.contains("_user_token")) {
-                String user_token = sharedPreferences.getString("_user_token", "DEFAULT");
+            if (sharedPreferences.contains(PreferenceKey.USER_TOKEN)) {
+                String user_token = sharedPreferences.getString(PreferenceKey.USER_TOKEN, null);
                 JSONObject post = new JSONObject();
 
                 try {

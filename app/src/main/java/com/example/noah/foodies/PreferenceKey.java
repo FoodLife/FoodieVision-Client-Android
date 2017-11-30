@@ -7,4 +7,5 @@ package com.example.noah.foodies;
 public class PreferenceKey {
     public static final String MAIN_PREFERENCES = "main";
     public static final String USER_TOKEN = "user_key";
+
 }

@@ -56,7 +56,7 @@ _image = Bitmap.createScaledBitmap(_image, 195, 260, true);
     private boolean analyse_image(Bitmap image) {
         int success = 0;
         SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, MODE_PRIVATE);
-        if (sharedPreferences.contains("_user_token")) {
+        if (sharedPreferences.contains(PreferenceKey.USER_TOKEN)) {
             String user_token = sharedPreferences.getString("_user_token", "DEFAULT");
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream);

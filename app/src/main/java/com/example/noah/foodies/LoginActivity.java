@@ -1,7 +1,9 @@
 package com.example.noah.foodies;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.AsyncTask;
@@ -53,22 +55,10 @@ public class LoginActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mEmailView = (AutoCompleteTextView) findViewById(R.id.username);
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        /*
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin(mEmailView.getText().toString(),mPasswordView.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
-*/
          Button signin = (Button) findViewById(R.id.email_sign_in_button);
         signin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,8 +70,13 @@ public class LoginActivity extends AppCompatActivity{
                 user_name = "guest";
             }
 
+if(user_name.equalsIgnoreCase("guest") && !password.equalsIgnoreCase("")){
+    TextInputLayout username = (TextInputLayout) findViewById(R.id.usernameLayout);
+    username.setError("guest user cannot have a password");
+    return;
+}
 
-                new Login(user_name,password).execute();
+                new Login(getApplicationContext(),user_name,password).execute();
 
             }
             ;
@@ -118,7 +113,7 @@ public class LoginActivity extends AppCompatActivity{
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
     }
-    private class Signup extends AsyncTask<Void,Void,Boolean>{
+    private class Signup extends AsyncTask<Void,String,Boolean>{
         String _user_name;
         String _password;
         String message = "";
@@ -129,17 +124,15 @@ public class LoginActivity extends AppCompatActivity{
         @Override
         protected void onPostExecute(Boolean result){
 
-            Handler handler =  new Handler(getApplicationContext().getMainLooper());
-            handler.post( new Runnable(){
-                public void run(){
-                    Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT);
-                }
-            });
+
             if (result){
-                new Login(_user_name,_password).execute();
+                new Login(getApplicationContext(),_user_name,_password).execute();
             }
         }
-
+        @Override
+        protected void onProgressUpdate(String... values) {
+            Toast.makeText(getApplicationContext(), values[0], Toast.LENGTH_SHORT).show();
+        }
         @Override
         protected Boolean doInBackground(Void... voids) {
             int success;
@@ -161,42 +154,40 @@ public class LoginActivity extends AppCompatActivity{
                             return true;
                         }
                     case 0:
-                        message = "invalid login";
-                        return false;
+                        message = "user already exists";
+                        break;
                     case -1:
                         message = "database error";
-                        return false;
+                        break;
                 }
             } catch (JSONException e) {
                 message="unexpected result";
             }
-
+    publishProgress(message);
             return false;
         }
     }
-    private class Login extends AsyncTask<Void,Void,Boolean>{
+    private class Login extends AsyncTask<Void,String,Boolean>{
         String _user_name;
         String _password;
         String message = "";
-        public Login(String user_name, String password){
+        Context _context;
+        public Login(Context context,String user_name, String password){
             _user_name = user_name;
             _password = password;
         }
         @Override
         protected void onPostExecute(Boolean result){
 
-            Handler handler =  new Handler(getApplicationContext().getMainLooper());
-            handler.post( new Runnable(){
-                public void run(){
-                    Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT);
-                }
-            });
             if (result){
                 setResult(RESULT_OK);
                 finish();
                }
         }
-
+        @Override
+        protected void onProgressUpdate(String... values) {
+            Toast.makeText(getApplicationContext(), values[0], Toast.LENGTH_SHORT).show();
+        }
         @Override
         protected Boolean doInBackground(Void... voids) {
             int success;
@@ -222,15 +213,15 @@ public class LoginActivity extends AppCompatActivity{
                         return true;
                     case 0:
                         message = "invalid login";
-                        return false;
+                        break;
                     case -1:
                         message = "database error";
-                        return false;
+                        break;
                 }
             } catch (JSONException e) {
                        message="unexpected result";
             }
-
+            publishProgress(message);
             return false;
         }
     }
