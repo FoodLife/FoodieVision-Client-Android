@@ -37,10 +37,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * Demonstrates the use of {@link RecyclerView} with a {@link LinearLayoutManager} and a
- * {@link GridLayoutManager}.
- */
+
 public class FoodieViewFragment extends Fragment {
 
     private static final String TAG = "FoodieViewFragment";
@@ -64,14 +61,18 @@ public class FoodieViewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        boolean all = getArguments().getBoolean("all", false);
+         boolean all = false;
+        Bundle args = getArguments();
+        if(args != null) {
+
+           all = getArguments().getBoolean("all", false);
+        }
 
         if (all){
             SharedPreferences sharedPreferences = getContext().getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, getContext().MODE_PRIVATE);
-            _user_token = sharedPreferences.getString("user_token",null);
+            _user_token = sharedPreferences.getString(PreferenceKey.USER_TOKEN,null);
         }
-        // Initialize dataset, this data would usually come from a local content provider or
-        // remote server.
+
         initDataset();
     }
 
@@ -88,9 +89,6 @@ public class FoodieViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-
-
         View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
         rootView.setTag(TAG);
 

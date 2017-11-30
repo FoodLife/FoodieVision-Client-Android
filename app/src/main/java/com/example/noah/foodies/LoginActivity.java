@@ -1,6 +1,5 @@
 package com.example.noah.foodies;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -16,8 +15,6 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * A login screen that offers login via email/password.
@@ -78,22 +75,14 @@ public class LoginActivity extends AppCompatActivity{
             public void onClick(View view) {
             String password = mPasswordView.getText().toString();
             String user_name = mEmailView.getText().toString();
-                JSONObject post = null;
-                try {
-                    post = new JSONObject("{\"user_name\":\"post\",\"password\" : \"password\"}");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
 
-               // JSONObject result = new FoodieAPI(FoodieAPI.login_url,post).post();
+            if (user_name.equalsIgnoreCase("")){
+                user_name = "guest";
+            }
 
 
                 new Login(user_name,password).execute();
-                /*
-                if( attemptLogin(mEmailView.getText().toString(), mPasswordView.getText().toString())){
 
-                }
-                finish();*/
             }
             ;
 
@@ -114,7 +103,7 @@ public class LoginActivity extends AppCompatActivity{
                     e.printStackTrace();
                 }
 
-                // JSONObject result = new FoodieAPI(FoodieAPI.login_url,post).post();
+                // JSONObject result = new FoodieAPI(FoodieAPI.LOGIN_URL,post).post();
 
 
                 new Signup(user_name,password).execute();
@@ -162,7 +151,7 @@ public class LoginActivity extends AppCompatActivity{
             } catch (JSONException e) {
             }
             JSONObject result = null;
-            result = new FoodieAPI(FoodieAPI.create_usr_url,post).post();
+            result = new FoodieAPI(FoodieAPI.CREATE_USER_URL,post).post();
             try {
                 success = result.getInt("success");
 
@@ -219,16 +208,16 @@ public class LoginActivity extends AppCompatActivity{
             } catch (JSONException e) {
             }
             JSONObject result = null;
-            result = new FoodieAPI(FoodieAPI.login_url,post).post();
+            result = new FoodieAPI(FoodieAPI.LOGIN_URL,post).post();
             try {
                 success = result.getInt("success");
 
                 switch(success){
                     case  1:
                         user_token = result.getString("result");
-                        SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
+                        SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, MODE_PRIVATE);
                         SharedPreferences.Editor edit = sharedPreferences.edit();
-                        edit.putString("_user_token", user_token);
+                        edit.putString(PreferenceKey.USER_TOKEN, user_token);
                         edit.apply();
                         return true;
                     case 0:

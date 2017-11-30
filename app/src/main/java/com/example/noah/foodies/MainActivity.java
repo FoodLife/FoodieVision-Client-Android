@@ -3,12 +3,9 @@ package com.example.noah.foodies;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -16,14 +13,13 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.noah.foodies.recyclerview.FoodieViewFragment;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_INTENT = 1;
@@ -32,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int ANALYSIS_REQUEST = 4;
 
 
-    FoodieGetPictureFragment getPicture;
+    FoodieGetPictureFragment getPicture = FoodieGetPictureFragment.newInstance();
     FoodieViewFragment myPics;
     FoodieViewFragment searchPics;
     private TextView mTextMessage;
@@ -74,22 +70,20 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
-        SharedPreferences.Editor edit = sharedPreferences.edit();
-        //edit.remove(PreferenceKey.USER_KEY);
-        edit.commit();
+
+        BottomNavigationView navigation = findViewById(R.id.navigation);
+        navigation.setSelectedItemId(R.id.navigation_dashboard);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.frame, FoodieGetPictureFragment.newInstance());
+        transaction.replace(R.id.frame, getPicture);
         transaction.commit();
 
-        if(!sharedPreferences.contains(PreferenceKey.USER_KEY)) {
+        if(!sharedPreferences.contains(PreferenceKey.USER_TOKEN)) {
             launch_intent(LOGIN_INTENT);
         }
 
-        mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setSelectedItemId(R.id.navigation_dashboard);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
     }
     private void launch_intent(int request){
         if (request == LOGIN_INTENT){
@@ -142,5 +136,38 @@ public class MainActivity extends AppCompatActivity {
 
             startActivityForResult(intent,ANALYSIS_REQUEST);
         }
+    }
+    @Override
+    public void onBackPressed() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
+
+        String user_token = sharedPreferences.getString(PreferenceKey.USER_TOKEN,null);
+
+        if (user_token == null){
+            logout();
+        }
+
+        JSONObject post = new JSONObject();
+
+        try {
+            post.put("user_token",user_token);
+        } catch (JSONException e) {
+            logout();
+        }
+        try {
+            new FoodieAPI(FoodieAPI.LOGOUT,post).execute().get();
+        } catch (InterruptedException | ExecutionException e) {
+            logout();
+        }
+
+    logout();
+    }
+    private void logout(){
+        SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
+        SharedPreferences.Editor edit = sharedPreferences.edit();
+        edit.remove(PreferenceKey.USER_TOKEN);
+        edit.apply();
+        finish();
     }
 }

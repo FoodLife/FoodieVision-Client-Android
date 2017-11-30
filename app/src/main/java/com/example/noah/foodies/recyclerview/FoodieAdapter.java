@@ -104,7 +104,7 @@ public class FoodieAdapter extends RecyclerView.Adapter<FoodieAdapter.ViewHolder
                 JSONObject post = new JSONObject();
 
                 try {
-                    post.put("_user_token",user_token);
+                    post.put("user_token",user_token);
                     post.put("picture_id",_img.getImage_id());
                 } catch (JSONException e) {
                     return false;
