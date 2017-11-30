@@ -77,8 +77,8 @@ public class FoodieAnalysisFragment extends Fragment {
     private boolean analyse_image(Bitmap image) {
         int success = 0;
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, getActivity().MODE_PRIVATE);
-        if (sharedPreferences.contains("user_token")) {
-            String user_token = sharedPreferences.getString("user_token", "DEFAULT");
+        if (sharedPreferences.contains("_user_token")) {
+            String user_token = sharedPreferences.getString("_user_token", "DEFAULT");
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
@@ -87,7 +87,7 @@ public class FoodieAnalysisFragment extends Fragment {
             JSONObject post = new JSONObject();
 
             try {
-                post.put("user_token", user_token);
+                post.put("_user_token", user_token);
                 post.put("image", encoded);
             } catch (JSONException e) {
                 e.printStackTrace();

@@ -51,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.navigation_dashboard:
 
-                    selected = (myPics == null) ? new FoodieViewFragment() : myPics;
+                    selected = (myPics == null) ? FoodieViewFragment.newInstance(true): myPics;
                     break;
                 case R.id.navigation_notifications:
 
-                    selected = (searchPics == null) ? new FoodieViewFragment() : searchPics;
+                    selected = (searchPics == null) ? FoodieViewFragment.newInstance(false) : searchPics;
                     break;
             }
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

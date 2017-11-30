@@ -228,7 +228,7 @@ public class LoginActivity extends AppCompatActivity{
                         user_token = result.getString("result");
                         SharedPreferences sharedPreferences = getSharedPreferences(PreferenceKey.MAIN_PREFERENCES,MODE_PRIVATE);
                         SharedPreferences.Editor edit = sharedPreferences.edit();
-                        edit.putString("user_token", user_token);
+                        edit.putString("_user_token", user_token);
                         edit.apply();
                         return true;
                     case 0:

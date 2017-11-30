@@ -16,8 +16,7 @@
 
 package com.example.noah.foodies.recyclerview;
 
-import android.content.Context;
-import android.graphics.Rect;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -27,10 +26,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.example.noah.foodies.FoodieAPI;
-import com.example.noah.foodies.FoodieView;
+import com.example.noah.foodies.PreferenceKey;
 import com.example.noah.foodies.R;
 
 import org.json.JSONArray;
@@ -38,7 +36,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Demonstrates the use of {@link RecyclerView} with a {@link LinearLayoutManager} and a
@@ -49,7 +46,7 @@ public class FoodieViewFragment extends Fragment {
     private static final String TAG = "FoodieViewFragment";
     private static final String KEY_LAYOUT_MANAGER = "layoutManager";
     private static final int SPAN_COUNT = 2;
-
+    private String user_key;
     private enum LayoutManagerType {
         GRID_LAYOUT_MANAGER,
         LINEAR_LAYOUT_MANAGER
@@ -62,19 +59,38 @@ public class FoodieViewFragment extends Fragment {
     protected FoodieAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
     protected String[] mDataset;
+    protected String _user_token;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean all = getArguments().getBoolean("all", false);
 
+        if (all){
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences(PreferenceKey.MAIN_PREFERENCES, getContext().MODE_PRIVATE);
+            _user_token = sharedPreferences.getString("user_token",null);
+        }
         // Initialize dataset, this data would usually come from a local content provider or
         // remote server.
         initDataset();
     }
 
+    public static FoodieViewFragment newInstance(boolean all){
+        FoodieViewFragment foodieView = new FoodieViewFragment();
+
+        Bundle args = new Bundle();
+        args.putBoolean("all", all);
+        foodieView.setArguments(args);
+
+        return foodieView;
+
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+
+
         View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
         rootView.setTag(TAG);
 
@@ -157,7 +173,7 @@ public class FoodieViewFragment extends Fragment {
      */
     private void initDataset() {
         try {
-            mDataset = new doSearch(null,null).execute().get();
+            mDataset = new doSearch(_user_token,null,null).execute().get();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -165,9 +181,12 @@ public class FoodieViewFragment extends Fragment {
     public class doSearch extends AsyncTask<Void,Void,String[]> {
 String _user_name;
 String _is_food;
-    public doSearch(String user_name,String is_food){
+String _user_token;
+
+    public doSearch(String user_token,String user_name,String is_food){
         _user_name = user_name;
         _is_food = is_food;
+        _user_token = user_token;
     };
         @Override
         protected String[] doInBackground(Void... voids) {
@@ -182,6 +201,10 @@ String _is_food;
 
                 }
                 post.put("dummy","dummy");
+
+                if (_user_token != null){
+                    post.put("user_token",_user_token);
+                }
                 } catch (JSONException e) {
 
             }
